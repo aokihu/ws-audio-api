@@ -1,5 +1,13 @@
 WebSocket Audio API
 ====================
+
+## Thanks
+
+The project is forked from (ws-audio-api)[https://github.com/Ivan-Feofanov/ws-audio-api]
+
+I just fixed little problem.
+
+
 ####Library to broadcast the sound from the microphone through a WebSocket
 
 This library can work in two ways:  
