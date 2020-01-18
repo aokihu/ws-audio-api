@@ -19,6 +19,9 @@
 		server: {
 			host: window.location.hostname,
 			port: 5000
+		},
+		analyser: {
+			fftSize: 2048, // Analyser window size
 		}
 	};
 
@@ -34,6 +37,11 @@
 			this.decoder = new OpusDecoder(this.config.codec.sampleRate, this.config.codec.channels);
 			this.silence = new Float32Array(this.config.codec.bufferSize);
 		},
+		/**
+		 * 
+		 * @param {Object} config WSAudio Stream configure
+		 * @param {WebSocket} socket Custom websokcet object(optional)
+		 */
 		Streamer: function(config, socket) {
 			navigator.getUserMedia = (navigator.getUserMedia ||
 				navigator.webkitGetUserMedia ||
@@ -43,6 +51,7 @@
 			this.config = Object.assign({}, config);
 			this.config.codec = this.config.codec || defaultConfig.codec;
 			this.config.server = this.config.server || defaultConfig.server;
+			this.config.analyser = this.config.analyser || defaultConfig.analyser;
 			this.sampler = new Resampler(44100, this.config.codec.sampleRate, 1, this.config.codec.bufferSize);
 			this.parentSocket = socket;
 			this.encoder = new OpusEncoder(this.config.codec.sampleRate, this.config.codec.channels, this.config.codec.app, this.config.codec.frameDuration);
@@ -53,6 +62,7 @@
 					_this.audioInput = audioContext.createMediaStreamSource(stream);
 					_this.gainNode = audioContext.createGain();
 					_this.recorder = audioContext.createScriptProcessor(_this.config.codec.bufferSize, 1, 1);
+					_this.analyser = audioContext.createAnalyser(); // Add analyser node
 					_this.recorder.onaudioprocess = function(e) {
 						var resampled = _this.sampler.resampler(e.inputBuffer.getChannelData(0));
 						var packets = _this.encoder.encode_float(resampled);
@@ -60,8 +70,13 @@
 							if (_this.socket.readyState == 1) _this.socket.send(packets[i]);
 						}
 					};
+
+					// Set Analyser param
+					_this.analyser.fftSize = _this.config.analyser.fftSize;
+
 					_this.audioInput.connect(_this.gainNode);
-					_this.gainNode.connect(_this.recorder);
+					_this.gainNode.connect(_this.analyser); // Insert analyser into chain
+					_this.analyser.connect(_this.recorder);
 					_this.recorder.connect(audioContext.destination);
 				}, onError || _this.onError);
 			}
@@ -84,9 +99,7 @@
 		} else if (this.socket.readyState == WebSocket.CONNECTING) {
 			var _onopen = this.socket.onopen;
 			this.socket.onopen = function() {
-				if (_onopen) {
-					_onopen();
-				}
+				if (_onopen) {_onopen();}
 				_this._makeStream(onError);
 			}
 		} else {
@@ -150,6 +163,21 @@
 			this.socket.close();
 		}
 	};
+
+	// 🌟 Add new prototype functions
+
+	/**
+	 * @function setVolume
+	 * @param volume: Float 设定音量大小
+	 */
+	WSAudioAPI.Streamer.prototype.setVolume = function(volume) {
+		if(volume > 1 || volume < 0) return false; // Invaild value
+		if(this.gainNode) this.gainNode.gain.value = volume;
+	}
+
+	WSAudioAPI.Streamer.prototype.getVolume = function() {
+		return this.gainNode ? this.gainNode.gain.value : 'Stream not started yet';
+	}
 
 	WSAudioAPI.Player.prototype.start = function() {
 		var _this = this;

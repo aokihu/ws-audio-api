@@ -3,10 +3,14 @@ WebSocket Audio API
 
 ## Thanks
 
-The project is forked from (ws-audio-api)[https://github.com/Ivan-Feofanov/ws-audio-api]
+The project is forked from [ws-audio-api](https://github.com/Ivan-Feofanov/ws-audio-api)
 
 I just fixed little problem.
 
+1. Change `wss://` default protocol to `ws://`
+2. Fix construct functuion initital without param
+3. `Streamer` add new instance function `getVolume()`, which can get volume of microphone.
+4. `Streamer` add new instance functuon `setVolume(vol)`, which can set the volume of microphone and the vaild value between `0` and `1`;
 
 ####Library to broadcast the sound from the microphone through a WebSocket
 
@@ -156,6 +160,17 @@ streamer.mute();
 Unmute microphone
 ```js
 streamer.unMute();
+```
+
+Get microphone's volume
+```js
+streamer.getVolume();
+```
+
+Set microphone's volume
+```js
+// the volume betwwen 0 and 1
+streamer.setVolume(0.3);
 ```
 
 Stop stream

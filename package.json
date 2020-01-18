@@ -1,6 +1,6 @@
 {
-  "name": "wsaudio-api",
-  "version": "0.1.6",
+  "name": "websocket-audio-api",
+  "version": "0.1.7",
   "description": "WebSocket Audio API: library to broadcast the sound from the microphone through a WebSocket",
   "main": "dist/ws-audio-api.min.js",
   "scripts": {
@@ -15,7 +15,7 @@
     "audio",
     "broadcast"
   ],
-  "author": "SYNC LLC.",
+  "author": "aokihu",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/aokihu/ws-audio-api/issues"
